@@ -6,17 +6,17 @@ import logging
 import os
 import sys
 
-import pymysql
 import pandas as pd
+import pymysql
 import requests
 from dateutil.relativedelta import relativedelta
 
 from chatStatus import businessStatus
+from deviceSessions import deviceSessions
 from discardedTraffic import report
+from partnerHandler import partnerHandler
 from phoneFeatures import phoneFeatures
 from searchDetails import searchDetails
-from partnerHandler import partnerHandler
-from deviceSessions import deviceSessions
 
 env = sys.argv[-1].lower()
 configFile = configparser.ConfigParser()
@@ -176,7 +176,7 @@ class EngagementReport:
         for partner, accounts in partnerJson.items():
             if " ".join(self.businessName.strip().lower().split()) in accounts:
                 partnerName = partner
-        
+
         tempReportingDF["Business Id"] = [self.businessId]
         tempReportingDF["Partner Name"] = [partnerName]
         tempReportingDF["Business Name"] = [self.businessName]
@@ -339,7 +339,8 @@ class EngagementReport:
                 if self.businessId in timezonesBusinessID and isEnabled:
                     processedData.append(self.businessAgentId)
                     self.businessDetails()
-                    logger.info("{} - {}: started to generate".format(str(self.businessName.encode('utf-8')),self.businessId))
+                    logger.info(
+                        "{} - {}: started to generate".format(str(self.businessName.encode('utf-8')), self.businessId))
                     self.dataFetch()
                     if self.API_response is not None:
                         self.stats = self.API_response
@@ -365,10 +366,9 @@ cur.execute("select business_id from business_agent_mapping where is_enabled=1")
 activeBusinessId = [ids[0] for ids in cur.fetchall()]
 db.close()
 
-
 for timezones in timezone_list['TimeZone']:
     logger.info("Processing {} timezone".format(timezones))
-    initialEnd = dt.date.today() - dt.timedelta(days=23)
+    initialEnd = dt.date.today() - dt.timedelta(days=54)
     initialStart = initialEnd.replace(day=1)
     today = initialEnd
     d = today - relativedelta(months=1)
@@ -377,10 +377,10 @@ for timezones in timezone_list['TimeZone']:
     fileName = initialStart.strftime('%d-%B-%Y') + "_to_" + initialEnd.strftime('%d-%B-%Y')
     logger.info("Current Report period : {}".format(fileName))
     logger.info("Previous month : {}".format(weekRange))
-    
+
     try:
         reportingDF, processedData = EngagementReport().process(timezones, initialStart, initialEnd, weekRange)
-            
+
     except Exception as e:
         logger.info("Error in object initialization : {}".format(e))
         continue
@@ -390,18 +390,15 @@ for timezones in timezone_list['TimeZone']:
             try:
                 existingData = pd.read_excel("./" + fileName + ".xlsx")
                 reportingDF = pd.concat([existingData, reportingDF], ignore_index=True)
-                reportingDF.to_excel(fileName+".xlsx",index=False)
             except Exception as e:
                 logger.info("Problem while concatenating the excel: {}".format(e))
-                writer = ("./" + fileName + ".xlsx") 
-                reportingDF.to_excel(writer, index=False, sheet_name="Engagements")
-                
+            finally:
+                reportingDF.to_excel(fileName + ".xlsx", index=False)
     except Exception as e:
         logger.info("Error in Loading and parsing the data : {}".format(e))
 
 
-reportingDF = reportingDF.drop_duplicates()
-
+reportingDF = pd.read_excel("./" + fileName + ".xlsx")
 activeBusinessId = set(activeBusinessId)
 sessionsBusinessId = set(reportingDF['Business Id'])
 zeroSessionsBusinessId = list(activeBusinessId - sessionsBusinessId)
@@ -414,82 +411,51 @@ tempColumns = reportingDF.columns
 for column in tempColumns[1:]:
     zeroSessionsDF[column] = 0
 
-
-reportingDF.to_csv('businesses_with_engagements.csv',index= False)
-
+reportingDF.to_csv('businesses_with_engagements.csv', index=False)
 
 # Verification Logic
 logger.info("Differences in Engagements,Total Traffic and Discarded Traffic")
 
-
-for i,business in reportingDF.iterrows():
-    
+for i, business in reportingDF.iterrows():
     # Engagements(Session with at least one activity with bot) = Desktop Engagement	 + Mobile Engagement
+    logger.info("Verifying {}".format(business['Business Id']))
     totalEngagement = business['Engagements\n(Session with at least one activity with bot)']
     desktopEngagement = business['Desktop Engagement']
     mobileEngagement = business['Mobile Engagement']
-    
-    if totalEngagement == desktopEngagement + mobileEngagement:
-        pass
-    else:
-        diff = totalEngagement - (desktopEngagement + mobileEngagement)
-        logger.info("Business Id - {}".format(business['Business Id']))
+    diff = totalEngagement - (desktopEngagement + mobileEngagement)
+    if abs(diff) > 0:
         logger.info("Difference in Engagement(Session with at least one activity with bot) - ")
-        logger.info("Engagement - {}".format(totalEngagement))
-        logger.info("Desktop Engagement + Mobile Engagement - {} + {}".format(desktopEngagement,mobileEngagement))
+        logger.info("Total Engagement - {} : Desktop Engagement + Mobile Engagement - {} + {}".format(totalEngagement, desktopEngagement, mobileEngagement))
         logger.info("The difference is {}".format(diff))
-
         business['Engagements\n(Session with at least one activity with bot)'] = desktopEngagement + mobileEngagement
-
-
-    
 
     #  Total traffic (Total sessions created) = Total Desktop traffic + Total Mobile traffic
     totalTraffic = business['Total traffic\n(Total sessions created)']
     desktopTraffic = business['Total Desktop traffic']
     mobileTraffic = business['Total Mobile traffic']
-    
-    if totalTraffic == desktopTraffic + mobileTraffic:
-        pass
-    else:
-        diff =  totalTraffic - (desktopTraffic + mobileTraffic)
-        logger.info("Business Id - {}".format(business['Business Id']))
+    diff = totalTraffic - (desktopTraffic + mobileTraffic)
+    if abs(diff) > 0:
         logger.info("Difference in Traffic(Total Sessions Created) - ")
-        logger.info("Total Traffic - {}".format(totalTraffic))
-        logger.info("Total Desktop traffic + Total Mobile traffic - {} + {}".format(desktopTraffic,mobileTraffic))
+        logger.info("Total Traffic - {} : Total Desktop traffic + Total Mobile traffic - {} + {}".format(
+            totalTraffic, desktopTraffic, mobileTraffic))
         logger.info("The difference is {}".format(diff))
-
         business['Total traffic\n(Total sessions created)'] = desktopTraffic + mobileTraffic
 
-        
-
-
-
-
-    #  Discarded traffic(Sessions bounced off landing page without any activity) = Desktop discarded traffic +	Mobile discarded traffic
-    
     discardedTraffic = business['Discarded traffic\n(Sessions bounced off landing page without any activity)']
     desktopDiscardedTraffic = business['Desktop discarded traffic']
     mobileDiscardedTraffic = business['Mobile discarded traffic']
-
-    
-    if discardedTraffic == desktopDiscardedTraffic + mobileDiscardedTraffic:
-        pass
-    else:
-        diff =  discardedTraffic - (desktopDiscardedTraffic + mobileDiscardedTraffic)
-        logger.info("Business Id - {}".format(business['Business Id']))
+    diff = discardedTraffic - (desktopDiscardedTraffic + mobileDiscardedTraffic)
+    if abs(diff) > 0:
         logger.info("Difference in Discarded traffic(Sessions bounced off landing page without any activity) - ")
-        logger.info("Discarded traffic - {}".format(discardedTraffic))
-        logger.info("Desktop discarded traffic + Mobile discarded traffic - {} + {}".format(desktopDiscardedTraffic,mobileDiscardedTraffic))
+        logger.info("Discarded traffic - {} : Desktop discarded traffic + Mobile discarded traffic - {} + {}".
+                    format(discardedTraffic, desktopDiscardedTraffic, mobileDiscardedTraffic))
         logger.info("The difference is {}".format(diff))
+        business['Discarded traffic\n(Sessions bounced off landing page without any activity)'] = \
+            desktopDiscardedTraffic + mobileDiscardedTraffic
 
-        business['Total traffic\n(Total sessions created)'] = desktopDiscardedTraffic + mobileDiscardedTraffic
-    
+    reportingDF.iloc[i, :] = business
 
-    reportingDF.iloc[i,:] = business
-
-
-finalDF = pd.concat([reportingDF,zeroSessionsDF])
-finalDF.to_csv('businesses_with_both_engagements_and_zero_sessions.csv',index= False)             
-
-
+finalDF = pd.concat([reportingDF, zeroSessionsDF])
+del finalDF['Partner Name']
+del finalDF['Business Name']
+finalDF.to_csv('businesses_with_both_engagements_and_zero_sessions.csv', index=False)
