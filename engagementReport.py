@@ -417,81 +417,79 @@ for column in tempColumns[1:]:
 
 reportingDF.to_csv('businesses_with_engagements.csv',index= False)
 
-finalDF = pd.concat([reportingDF,zeroSessionsDF])
 
-finalDF.to_csv('businesses_with_both_engagements_and_zero_sessions.csv',index= False)
-
-
-# # Verification Logic
-# logger.info("Differences in Engagements,Total Traffic and Discarded Traffic")
+# Verification Logic
+logger.info("Differences in Engagements,Total Traffic and Discarded Traffic")
 
 
-# for i,business in reportingDF.iterrows():
+for i,business in reportingDF.iterrows():
     
-#     # Engagements(Session with at least one activity with bot) = Desktop Engagement	 + Mobile Engagement
-#     totalEngagement = business['Engagements\n(Session with at least one activity with bot)']
-#     desktopEngagement = business['Desktop Engagement']
-#     mobileEngagement = business['Mobile Engagement']
+    # Engagements(Session with at least one activity with bot) = Desktop Engagement	 + Mobile Engagement
+    totalEngagement = business['Engagements\n(Session with at least one activity with bot)']
+    desktopEngagement = business['Desktop Engagement']
+    mobileEngagement = business['Mobile Engagement']
     
-#     if totalEngagement == desktopEngagement + mobileEngagement:
-#         pass
-#     else:
-#         diff = totalEngagement - (desktopEngagement + mobileEngagement)
-#         logger.info("Business Id - {}".format(business['Business Id']))
-#         logger.info("Difference in Engagement(Session with at least one activity with bot) - ")
-#         logger.info("Engagement - {}".format(totalEngagement))
-#         logger.info("Desktop Engagement + Mobile Engagement - {} + {}".format(desktopEngagement,mobileEngagement))
-#         logger.info("The difference is {}".format(diff))
+    if totalEngagement == desktopEngagement + mobileEngagement:
+        pass
+    else:
+        diff = totalEngagement - (desktopEngagement + mobileEngagement)
+        logger.info("Business Id - {}".format(business['Business Id']))
+        logger.info("Difference in Engagement(Session with at least one activity with bot) - ")
+        logger.info("Engagement - {}".format(totalEngagement))
+        logger.info("Desktop Engagement + Mobile Engagement - {} + {}".format(desktopEngagement,mobileEngagement))
+        logger.info("The difference is {}".format(diff))
 
-#         business['Engagements\n(Session with at least one activity with bot)'] = desktopEngagement + mobileEngagement
+        business['Engagements\n(Session with at least one activity with bot)'] = desktopEngagement + mobileEngagement
 
 
     
 
-#     #  Total traffic (Total sessions created) = Total Desktop traffic + Total Mobile traffic
-#     totalTraffic = business['Total traffic\n(Total sessions created)']
-#     desktopTraffic = business['Total Desktop traffic']
-#     mobileTraffic = business['Total Mobile traffic']
+    #  Total traffic (Total sessions created) = Total Desktop traffic + Total Mobile traffic
+    totalTraffic = business['Total traffic\n(Total sessions created)']
+    desktopTraffic = business['Total Desktop traffic']
+    mobileTraffic = business['Total Mobile traffic']
     
-#     if totalTraffic == desktopTraffic + mobileTraffic:
-#         pass
-#     else:
-#         diff =  totalTraffic - (desktopTraffic + mobileTraffic)
-#         logger.info("Business Id - {}".format(business['Business Id']))
-#         logger.info("Difference in Traffic(Total Sessions Created) - ")
-#         logger.info("Total Traffic - {}".format(totalTraffic))
-#         logger.info("Total Desktop traffic + Total Mobile traffic - {} + {}".format(desktopTraffic,mobileTraffic))
-#         logger.info("The difference is {}".format(diff))
+    if totalTraffic == desktopTraffic + mobileTraffic:
+        pass
+    else:
+        diff =  totalTraffic - (desktopTraffic + mobileTraffic)
+        logger.info("Business Id - {}".format(business['Business Id']))
+        logger.info("Difference in Traffic(Total Sessions Created) - ")
+        logger.info("Total Traffic - {}".format(totalTraffic))
+        logger.info("Total Desktop traffic + Total Mobile traffic - {} + {}".format(desktopTraffic,mobileTraffic))
+        logger.info("The difference is {}".format(diff))
 
-#         business['Total traffic\n(Total sessions created)'] = desktopTraffic + mobileTraffic
+        business['Total traffic\n(Total sessions created)'] = desktopTraffic + mobileTraffic
 
         
 
 
 
 
-#     #  Discarded traffic(Sessions bounced off landing page without any activity) = Desktop discarded traffic +	Mobile discarded traffic
+    #  Discarded traffic(Sessions bounced off landing page without any activity) = Desktop discarded traffic +	Mobile discarded traffic
     
-#     discardedTraffic = business['Discarded traffic\n(Sessions bounced off landing page without any activity)']
-#     desktopDiscardedTraffic = business['Desktop discarded traffic']
-#     mobileDiscardedTraffic = business['Mobile discarded traffic']
+    discardedTraffic = business['Discarded traffic\n(Sessions bounced off landing page without any activity)']
+    desktopDiscardedTraffic = business['Desktop discarded traffic']
+    mobileDiscardedTraffic = business['Mobile discarded traffic']
 
     
-#     if discardedTraffic == desktopDiscardedTraffic + mobileDiscardedTraffic:
-#         pass
-#     else:
-#         diff =  discardedTraffic - (desktopDiscardedTraffic + mobileDiscardedTraffic)
-#         logger.info("Business Id - {}".format(business['Business Id']))
-#         logger.info("Difference in Discarded traffic(Sessions bounced off landing page without any activity) - ")
-#         logger.info("Discarded traffic - {}".format(discardedTraffic))
-#         logger.info("Desktop discarded traffic + Mobile discarded traffic - {} + {}".format(desktopDiscardedTraffic,mobileDiscardedTraffic))
-#         logger.info("The difference is {}".format(diff))
+    if discardedTraffic == desktopDiscardedTraffic + mobileDiscardedTraffic:
+        pass
+    else:
+        diff =  discardedTraffic - (desktopDiscardedTraffic + mobileDiscardedTraffic)
+        logger.info("Business Id - {}".format(business['Business Id']))
+        logger.info("Difference in Discarded traffic(Sessions bounced off landing page without any activity) - ")
+        logger.info("Discarded traffic - {}".format(discardedTraffic))
+        logger.info("Desktop discarded traffic + Mobile discarded traffic - {} + {}".format(desktopDiscardedTraffic,mobileDiscardedTraffic))
+        logger.info("The difference is {}".format(diff))
 
-#         business['Total traffic\n(Total sessions created)'] = desktopDiscardedTraffic + mobileDiscardedTraffic
+        business['Total traffic\n(Total sessions created)'] = desktopDiscardedTraffic + mobileDiscardedTraffic
     
 
-#     reportingDF.iloc[i,:] = business
+    reportingDF.iloc[i,:] = business
 
-              
+
+finalDF = pd.concat([reportingDF,zeroSessionsDF])
+finalDF.to_csv('businesses_with_both_engagements_and_zero_sessions.csv',index= False)             
 
 
