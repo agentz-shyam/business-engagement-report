@@ -368,7 +368,7 @@ db.close()
 
 for timezones in timezone_list['TimeZone']:
     logger.info("Processing {} timezone".format(timezones))
-    initialEnd = dt.date.today() - dt.timedelta(days=54)
+    initialEnd = dt.date.today() - dt.timedelta(days=85)
     initialStart = initialEnd.replace(day=1)
     today = initialEnd
     d = today - relativedelta(months=1)
@@ -440,6 +440,8 @@ for i, business in reportingDF.iterrows():
             totalTraffic, desktopTraffic, mobileTraffic))
         logger.info("The difference is {}".format(diff))
         business['Total traffic\n(Total sessions created)'] = desktopTraffic + mobileTraffic
+    
+    # Discarded traffic\n(Sessions bounced off landing page without any activity) = Desktop discarded traffic + Mobile discarded traffic
 
     discardedTraffic = business['Discarded traffic\n(Sessions bounced off landing page without any activity)']
     desktopDiscardedTraffic = business['Desktop discarded traffic']
