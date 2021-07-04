@@ -458,6 +458,6 @@ for i, business in reportingDF.iterrows():
     reportingDF.iloc[i, :] = business
 
 finalDF = pd.concat([reportingDF, zeroSessionsDF])
-del finalDF['Partner Name']
-del finalDF['Business Name']
+# del finalDF['Partner Name']
+# del finalDF['Business Name']
 finalDF.to_csv('businesses_with_both_engagements_and_zero_sessions.csv', index=False)
