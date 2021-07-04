@@ -37,7 +37,7 @@ def phoneFeatures(configFile, start, end, businessId):
         mobileFeatures["SMS notifications"] = [0]
     try:
         mobileFeatures["SMS Customers_to_Business"] = [
-            contactNote_temp['INCOMING_SMS'] + contactNote_temp['BUSINESS_SMS']]
+            contactNote_temp['INCOMING_SMS']]
     except:
         mobileFeatures["SMS Customers_to_Business"] = [0]
     try:
