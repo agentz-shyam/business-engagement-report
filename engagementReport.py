@@ -368,7 +368,7 @@ db.close()
 
 for timezones in timezone_list['TimeZone']:
     logger.info("Processing {} timezone".format(timezones))
-    initialEnd = dt.date.today() - dt.timedelta(days=2)
+    initialEnd = dt.date.today() - dt.timedelta(days=3)
     initialStart = initialEnd.replace(day=1)
     today = initialEnd
     d = today - relativedelta(months=1)
